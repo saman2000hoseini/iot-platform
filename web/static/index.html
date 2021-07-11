@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Home</title>
+    <style>
+        html {
+            font-family: Helvetica, fantasy;
+            display: inline-block;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        body {
+            margin-top: 50px;
+        }
+
+        h1 {
+            color: #444444;
+            margin: 50px auto 25px;
+        }
+
+        h3 {
+            color: #444444;
+            margin-bottom: 50px;
+        }
+
+        .button {
+            text-align: center;
+            display: block;
+            width: auto;
+            background: cornflowerblue;
+            border: none;
+            color: white;
+            padding: 13px 30px;
+            text-decoration: none;
+            font-size: 25px;
+            margin: 0 auto 25px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .button:hover {
+            background: #2464d7;
+        }
+
+        p {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+<div style='height:100vh; display: flex; flex-direction: column; justify-content: center;align-items: center;align-content: center'>
+    <h1>Select Sensor</h1>
+    <a class="button" href="http://localhost:54321/nodes/0">Temperature</a>
+    <a class="button" href="http://localhost:54321/nodes/1">Light</a>
+    <a class="button" href="http://localhost:54321/nodes/2">Cooler</a>
+    <a class="button" href="http://localhost:54321/nodes/3">Light Bulb</a>
+</div>
+</body>
+</html>
