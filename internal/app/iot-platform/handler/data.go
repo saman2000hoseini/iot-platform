@@ -2,14 +2,17 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/labstack/echo/v4"
+	"github.com/opentracing/opentracing-go"
 	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/model"
 	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/request"
 	"github.com/saman2000hoseini/iot-platform/internal/pkg/nodestate"
 	"github.com/saman2000hoseini/iot-platform/internal/pkg/nodetype"
+	"github.com/saman2000hoseini/iot-platform/pkg/tracing"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"io/ioutil"
@@ -43,6 +46,15 @@ func NewSensorDataHandler(repo model.SQLSensorDataRepo, token string, thresholdR
 }
 
 func (h *SensorDataHandler) Authorize(err error, c echo.Context) error {
+	tracer, closer := tracing.Init("local-server")
+	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
+
+	span := tracer.StartSpan("submit-threshold")
+	defer span.Finish()
+
+	//ctx := opentracing.ContextWithSpan(context.Background(), span)
+
 	req := new(request.SensorData)
 
 	var bodyBytes []byte
@@ -93,6 +105,15 @@ func (h *SensorDataHandler) Authorize(err error, c echo.Context) error {
 }
 
 func (h *SensorDataHandler) Submit(c echo.Context) error {
+	tracer, closer := tracing.Init("local-server")
+	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
+
+	span := tracer.StartSpan("submit-data")
+	defer span.Finish()
+
+	ctx := opentracing.ContextWithSpan(context.Background(), span)
+
 	req := new(request.SensorData)
 
 	if err := c.Bind(req); err != nil {
@@ -105,12 +126,12 @@ func (h *SensorDataHandler) Submit(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	err := h.DataRepo.Save(model.NewSensorData(req.SensorID, req.Value, req.Type))
+	err := h.DataRepo.Save(model.NewSensorData(req.SensorID, req.Value, req.Type), ctx)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	threshold, err := h.ThresholdRepo.Find(req.Type)
+	threshold, err := h.ThresholdRepo.Find(req.Type, ctx)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return c.NoContent(http.StatusOK)
@@ -161,6 +182,15 @@ func (h *SensorDataHandler) Submit(c echo.Context) error {
 }
 
 func (h *SensorDataHandler) Get(c echo.Context) error {
+	tracer, closer := tracing.Init("local-server")
+	defer closer.Close()
+	opentracing.SetGlobalTracer(tracer)
+
+	span := tracer.StartSpan("get-data")
+	defer span.Finish()
+
+	ctx := opentracing.ContextWithSpan(context.Background(), span)
+
 	t := c.Param("type")
 	if len(t) == 0 || t == "" {
 		return c.NoContent(http.StatusNotFound)
@@ -172,7 +202,7 @@ func (h *SensorDataHandler) Get(c echo.Context) error {
 	}
 
 	if nodetype.IsSensor(int(nodeType)) {
-		data, err := h.DataRepo.FindLast(int(nodeType))
+		data, err := h.DataRepo.FindLast(int(nodeType), ctx)
 		if err != nil {
 			return c.NoContent(http.StatusNotFound)
 		}

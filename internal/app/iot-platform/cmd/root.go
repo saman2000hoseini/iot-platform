@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/cmd/actuator"
 	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/cmd/central-server"
-	local_server "github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/cmd/local-server"
+	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/cmd/local-server"
 	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/cmd/sensor"
 	"github.com/saman2000hoseini/iot-platform/internal/app/iot-platform/config"
 	"github.com/spf13/cobra"

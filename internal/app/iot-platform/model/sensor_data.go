@@ -1,6 +1,10 @@
 package model
 
-import "gorm.io/gorm"
+import (
+	"context"
+	"github.com/opentracing/opentracing-go"
+	"gorm.io/gorm"
+)
 
 type SensorData struct {
 	ID       int    `gorm:"primaryKey"`
@@ -18,21 +22,27 @@ func NewSensorData(sid string, value, t int) *SensorData {
 }
 
 type SensorDataRepo interface {
-	Find(id string) (SensorData, error)
-	Save(data *SensorData) error
+	FindLast(t int, ctx context.Context) (SensorData, error)
+	Save(data *SensorData, ctx context.Context) error
 }
 
 type SQLSensorDataRepo struct {
 	DB *gorm.DB
 }
 
-func (r SQLSensorDataRepo) FindLast(t int) (SensorData, error) {
+func (r SQLSensorDataRepo) FindLast(t int, ctx context.Context) (SensorData, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "find-last-data")
+	defer span.Finish()
+
 	var stored SensorData
 	err := r.DB.Where("type = ?", t).Last(&stored).Error
 
 	return stored, err
 }
 
-func (r SQLSensorDataRepo) Save(data *SensorData) error {
+func (r SQLSensorDataRepo) Save(data *SensorData, ctx context.Context) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "save-data")
+	defer span.Finish()
+
 	return r.DB.Create(data).Error
 }
